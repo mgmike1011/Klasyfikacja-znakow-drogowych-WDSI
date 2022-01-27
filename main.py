@@ -5,3 +5,5 @@ import numpy as np
 import cv2
 from sklearn.ensemble import RandomForestClassifier
 import pandas
+
+# TODO Dodać panią Piasek do repozytorium   jpiasek
