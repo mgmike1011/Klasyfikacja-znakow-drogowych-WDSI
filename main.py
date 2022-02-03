@@ -7,3 +7,9 @@ from sklearn.ensemble import RandomForestClassifier
 import pandas
 
 # TODO Dodać panią Piasek do repozytorium   jpiasek
+
+def main():
+    print("")
+
+if __name__ == '__main__':
+    main()

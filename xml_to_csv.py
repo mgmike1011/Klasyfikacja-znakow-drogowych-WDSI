@@ -20,7 +20,7 @@ for filename in glob.glob(os.path.join(path, '*.xml')):
        # Parsing the XML file
         xmlparse = Xet.parse(f)
         root = xmlparse.getroot()
-        file_name = xmlparse.find("filename").text
+        File_name = xmlparse.find("filename").text
         for i in xmlparse.findall("size"):
             if(i):
                 Width = i.find("width").text
@@ -34,7 +34,7 @@ for filename in glob.glob(os.path.join(path, '*.xml')):
                 Roi_Y1 =  j.find("ymin").text
                 Roi_X2 =  j.find("xmax").text
                 Roi_Y2 =  j.find("ymax").text
-        csv_line = [Width,Height,Name,Roi_X1,Roi_Y1,Roi_X2,Roi_Y2,file_name]
+        csv_line = [Width,Height,Name,Roi_X1,Roi_Y1,Roi_X2,Roi_Y2,File_name]
         rows.append(csv_line)
 # Zapis danych do pliku CSV
 csvfile_writer.writerows(rows)
