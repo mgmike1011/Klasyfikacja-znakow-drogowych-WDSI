@@ -1,3 +1,7 @@
+# 
+# Program do statystyki ilości i rodzaju znaków
+# @author: Miłosz Gajewski
+# 
 import xml.etree.ElementTree as Xet
 import pandas as pd
 import glob, os
