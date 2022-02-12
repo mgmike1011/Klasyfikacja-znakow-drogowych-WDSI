@@ -184,6 +184,23 @@ def evaluate(data):  # porownanie statystyczne, kolumna label_pred - wypredkowan
     # this function does not return anything
     return
 
+def display(data):
+    """
+    Displays samples of correct and incorrect classification.
+    @param data: List of dictionaries, one for every sample, with entries "image" (np.array with image), "label" (class_id),
+                    "desc" (np.array with descriptor), and "label_pred".
+    @return: Nothing.
+    """
+    n_classes = 3
+
+    corr = {}
+    incorr = {}
+    for idx, sample in enumerate(data):
+        if sample['desc'] is not None:
+            print(sample['label'])
+    # this function does not return anything
+    return
+
 def main():
     print("### Dane treningowe ###")
     print("Wczytywanie danych treningowych.")
@@ -219,6 +236,7 @@ def main():
     print('testing on testing dataset')
     data_test = predict(rf, data_test)
     evaluate(data_test)
+    display(data_test)
 
 if __name__ == '__main__':
     main()
