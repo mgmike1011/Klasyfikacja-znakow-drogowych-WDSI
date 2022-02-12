@@ -105,6 +105,30 @@ def extract_features(data):
 
     return data
 
+def train(data):  # tylko trenujemy model tutaj
+    """
+    Trains Random Forest classifier.
+    @param data: List of dictionaries, one for every sample, with entries "image" (np.array with image), "label" (class_id),
+                    "desc" (np.array with descriptor).
+    @return: Trained model.
+    """
+    # train random forest model and return it from function.
+    # TODO PUT YOUR CODE HERE
+    # GITHUB:
+
+    # Z ZAJEC:
+    descs = []
+    labels = []
+    for sample in data:
+        if sample['desc'] is not None:
+            descs.append(sample['desc'].squeeze(0))  # squeeze zmienia macierz na wektor wokol konkretnej osi -> tu wokol osi 0 (a mozemy wokol 0, 1 lub 2)
+            labels.append(sample['label'])
+    rf = RandomForestClassifier()
+    rf.fit(descs, labels)
+    # ------------------
+    # Z ZAJEC:
+    return rf  # wyjsciem funkcji jest model
+
 def main():
     print("### Dane treningowe ###")
     print("Wczytywanie danych treningowych.")
@@ -130,6 +154,11 @@ def main():
 
     print('extracting train features')
     data_train = extract_features(data_train)
+
+    print('training')
+    rf = train(data_train)
+
+    
 
 if __name__ == '__main__':
     main()
