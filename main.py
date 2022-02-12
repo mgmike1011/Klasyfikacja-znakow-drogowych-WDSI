@@ -129,6 +129,61 @@ def train(data):  # tylko trenujemy model tutaj
     # Z ZAJEC:
     return rf  # wyjsciem funkcji jest model
 
+def predict(rf, data):  # przyjmuje rf gdzie mamy zapisany model i dane porzednie
+    """
+    Predicts labels given a model and saves them as "label_pred" (int) entry for each sample.
+    @param rf: Trained model.
+    @param data: List of dictionaries, one for every sample, with entries "image" (np.array with image), "label" (class_id),
+                    "desc" (np.array with descriptor).
+    @return: Data with added predicted labels for each sample.
+    """
+    # perform prediction using trained model and add results as "label_pred" (int) entry in sample
+    # TODO PUT YOUR CODE HERE
+    # Z ZAJEC:
+    for idx, sample in enumerate(data):
+        if sample['desc'] is not None:
+            pred = rf.predict(sample['desc'])  # ta linia jest kluczowa dla predykcji, ale my chcemy zewaluowac cala baze danych dlatego robimy inne linijki
+            sample['label_pred'] = int(pred)
+    # zwraca etykiete do pred i uzupelniamy tabele data etykietą (etykiety byly 1, 2 ,3)
+    # ------------------
+
+    return data  # dane z wypredykowanymi etykietami
+
+def evaluate(data):  # porownanie statystyczne, kolumna label_pred - wypredkowane labele, a w kolumnie label - etykiety prawdziwe. Wykorzystujemy jedna z metryk ewaluacji
+    """
+    Evaluates results of classification.
+    @param data: List of dictionaries, one for every sample, with entries "image" (np.array with image), "label" (class_id),
+                    "desc" (np.array with descriptor), and "label_pred".
+    @return: Nothing.
+    """
+    # evaluate classification results and print statistics
+    # TODO PUT YOUR CODE HERE
+    # Accuracy, ile rzeczy model trafil -> pierwsza z metod ewaluacji (wszystkie proby -> mianownik, to co sie udal -> w liczniku)
+    # Z ZAJEC:
+    n_corr = 0
+    n_incorr = 0
+    pred_labels = []
+    true_labels = []
+    for idx, sample in enumerate(data):
+        if sample['desc'] is not None:
+            pred_labels.append(sample['label_pred'])
+            true_labels.append(sample['label'])
+            if sample['label_pred'] == sample['label']:
+                n_corr += 1
+            else:
+                n_incorr += 1
+    n = n_corr / max(n_corr + n_incorr, 1)
+    print("Score = " + str(n))
+
+    conf_matrix = confusion_matrix(true_labels, pred_labels)
+    print(conf_matrix)
+
+    # ------------------
+    # ------------------
+
+    # this function does not return anything
+    return
+
 def main():
     print("### Dane treningowe ###")
     print("Wczytywanie danych treningowych.")
@@ -158,7 +213,12 @@ def main():
     print('training')
     rf = train(data_train)
 
-    
+    print('extracting test features')
+    data_test = extract_features(data_test)
+
+    print('testing on testing dataset')
+    data_test = predict(rf, data_test)
+    evaluate(data_test)
 
 if __name__ == '__main__':
     main()
