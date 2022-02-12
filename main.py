@@ -62,6 +62,49 @@ def balance_dataset(data, ratio):
 
     return sampled_data
 
+def learn_bovw(data):
+    """
+    Learns BoVW dictionary and saves it as "voc.npy" file.
+    @param data: List of dictionaries, one for every sample, with entries "image" (np.array with image) and "label" (class_id).
+    @return: Nothing
+    """
+    dict_size = 128
+    bow = cv2.BOWKMeansTrainer(dict_size)
+
+    sift = cv2.SIFT_create()
+    for sample in data:
+        kpts = sift.detect(sample['image'], None)
+        kpts, desc = sift.compute(sample['image'], kpts)
+
+        if desc is not None:
+            bow.add(desc)
+
+    vocabulary = bow.cluster()
+
+    np.save('voc.npy', vocabulary)
+
+def extract_features(data):
+    """
+    Extracts features for given data and saves it as "desc" entry.
+    @param data: List of dictionaries, one for every sample, with entries "image" (np.array with image) and "label" (class_id).
+    @return: Data with added descriptors for each sample.
+    """
+    sift = cv2.SIFT_create()
+    flann = cv2.FlannBasedMatcher_create()
+    bow = cv2.BOWImgDescriptorExtractor(sift, flann)
+    vocabulary = np.load('voc.npy')
+    bow.setVocabulary(vocabulary)
+    for sample in data:
+        # compute descriptor and add it as "desc" entry in sample
+        # TODO PUT YOUR CODE HERE
+        # Z ZAJĘĆ:
+        kpts = sift.detect(sample['image'], None)
+        desc = bow.compute(sample['image'], kpts)  # robienie deskryptora
+        sample['desc'] = desc
+        # ------------------
+
+    return data
+
 def main():
     print("### Dane treningowe ###")
     print("Wczytywanie danych treningowych.")
@@ -80,6 +123,13 @@ def main():
     data_test = balance_dataset(data_test, 1.0)
     print('Dane testowe po balansowaniu:')
     display_dataset_stats(data_test)
+
+    # you can comment those lines after dictionary is learned and saved to disk.
+    # print('learning BoVW')
+    # learn_bovw(data_train)
+
+    print('extracting train features')
+    data_train = extract_features(data_train)
 
 if __name__ == '__main__':
     main()
