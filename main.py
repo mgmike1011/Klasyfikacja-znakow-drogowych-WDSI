@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
 import pandas
 
-# TODO Dodać panią Piasek do repozytorium   jpiasek
+# TODO add collaborate      jpiasek
  
 def load_data(path, filename,folder_path):
     """
@@ -28,11 +28,13 @@ def load_data(path, filename,folder_path):
         elif entry['Name'] == 'trafficlight':
             class_id = 2
         
+        image_name = entry['Path']
+
         image_path = folder_path + entry['Path']
 
         if class_id != -1:
             image = cv2.imread(os.path.join(path, image_path))
-            data.append({'image': image, 'label': class_id})
+            data.append({'image': image, 'label': class_id, 'image_name': image_path})
     return data 
 
 def display_dataset_stats(data):
@@ -114,8 +116,6 @@ def train(data):  # tylko trenujemy model tutaj
     """
     # train random forest model and return it from function.
     # TODO PUT YOUR CODE HERE
-    # GITHUB:
-
     # Z ZAJEC:
     descs = []
     labels = []
@@ -126,7 +126,6 @@ def train(data):  # tylko trenujemy model tutaj
     rf = RandomForestClassifier()
     rf.fit(descs, labels)
     # ------------------
-    # Z ZAJEC:
     return rf  # wyjsciem funkcji jest model
 
 def predict(rf, data):  # przyjmuje rf gdzie mamy zapisany model i dane porzednie
@@ -191,13 +190,16 @@ def display(data):
                     "desc" (np.array with descriptor), and "label_pred".
     @return: Nothing.
     """
-    n_classes = 3
-
+    n_classes = 2
     corr = {}
     incorr = {}
     for idx, sample in enumerate(data):
         if sample['desc'] is not None:
-            print(sample['image'])
+            print(str(sample['image_name'])[14:])
+            if sample['label_pred'] == 1:
+                print("Wykryto znak typu crosswalk")
+            elif sample['label_pred'] == 2:
+                print("Brak znaku typu crosswalk")
     # this function does not return anything
     return
 
@@ -221,8 +223,8 @@ def main():
     display_dataset_stats(data_test)
 
     # you can comment those lines after dictionary is learned and saved to disk.
-    # print('learning BoVW')
-    # learn_bovw(data_train)
+    print('learning BoVW')
+    learn_bovw(data_train)
 
     print('extracting train features')
     data_train = extract_features(data_train)
