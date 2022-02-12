@@ -1,4 +1,4 @@
-Width,Height,Name,Roi.X1,Roi.Y1,Roi.X2, Roi.Y2,Path
+Width,Height,Name,Roi.X1,Roi.Y1,Roi.X2,Roi.Y2,Path
 254,400,crosswalk,20,24,209,237,Train/road122.png
 400,302,crosswalk,151,73,271,195,Train/road123.png
 267,400,crosswalk,15,26,168,157,Train/road125.png

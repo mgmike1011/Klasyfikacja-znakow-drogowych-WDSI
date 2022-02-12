@@ -1,4 +1,4 @@
-Width,Height,Name,Roi.X1,Roi.Y1,Roi.X2, Roi.Y2,Filename
+Width,Height,Name,Roi.X1,Roi.Y1,Roi.X2,Roi.Y2,Path
 267,400,trafficlight,98,62,208,232,road0.png
 400,283,trafficlight,154,63,258,281,road1.png
 400,267,trafficlight,106,3,244,263,road10.png
