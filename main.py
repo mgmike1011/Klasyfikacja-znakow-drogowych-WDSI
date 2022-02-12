@@ -197,7 +197,7 @@ def display(data):
     incorr = {}
     for idx, sample in enumerate(data):
         if sample['desc'] is not None:
-            print(sample['label'])
+            print(sample['image'])
     # this function does not return anything
     return
 
@@ -213,7 +213,7 @@ def main():
 
     print("### Dane testowe ###")
     print("Wczytywanie danych testowych.")
-    data_test = load_data('./', 'Test.csv','./Test/')
+    data_test = load_data('./', 'Test.csv','./Test/images/')
     print('Dane testowe przed balansowaniem:')
     display_dataset_stats(data_test)
     data_test = balance_dataset(data_test, 1.0)
