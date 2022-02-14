@@ -16,7 +16,7 @@ Speedlimit_liczba = 0
 Trafic_light = [] #trafficlight
 Trafic_light_liczba = 0
 # Zapis do pliku
-plik = open("Statystyka.txt",'a')
+plik = open("Statystyka_zbioru.txt",'a')
 # Ścieżka do folderu
 path = 'annotations/'
 # Odczytywanie danych
@@ -28,18 +28,18 @@ for filename in glob.glob(os.path.join(path, '*.xml')):
         for i in xmlparse.findall("object"):
             if(i):
                 Name = i.find("name").text
-        if(Name == "crosswalk"):
-            Crosswalk_liczba += 1
-            Crosswalk.append(File_name)
-        elif(Name == "stop"):
-            Stop.append(File_name)
-            Stop_liczba += 1
-        elif(Name == "speedlimit"):
-            Speedlimit.append(File_name)
-            Speedlimit_liczba += 1
-        elif(Name == "trafficlight"):
-            Trafic_light.append(File_name)
-            Trafic_light_liczba += 1
+                if(Name == "crosswalk"):
+                    Crosswalk_liczba += 1
+                    Crosswalk.append(File_name)
+                elif(Name == "stop"):
+                    Stop.append(File_name)
+                    Stop_liczba += 1
+                elif(Name == "speedlimit"):
+                    Speedlimit.append(File_name)
+                    Speedlimit_liczba += 1
+                elif(Name == "trafficlight"):
+                    Trafic_light.append(File_name)
+                    Trafic_light_liczba += 1
 # Wyświetlenie wyników:
 print("Kategorie znaków:")
 print("1.   Crosswalk       -   ilość: " + str(Crosswalk_liczba))
