@@ -51,7 +51,7 @@ def load_data(path, path_type):
     """
     Ładownie danych do obiektów klas.
     @param path: Ścieżka do folderu z plikami "*.xml"
-    @param path_type: Typ zbioru - testowy lub treningowy.
+    @param path_type: Ścieżka do folderu z plikami "*.png".
     @return lista_zdj: lista obiektów klasy Zdjecie.
     """
     lista_zdj = []
@@ -222,7 +222,7 @@ def main():
 
     print("### Dane testowe ###")
     print("Wczytywanie danych testowych.")
-    data_test = load_data('./Test/annotations','./test/images/')
+    data_test = load_data('./Test/annotations','./Test/images/')
     print('Statystyka zbioru testowego:')
     display_dataset_stats(data_test)
 

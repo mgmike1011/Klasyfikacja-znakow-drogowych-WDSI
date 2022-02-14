@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 # Foldery ze zdjęciami
-images/
-annotations/
+images_/
+annotations_/
