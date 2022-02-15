@@ -269,13 +269,13 @@ def display(data):
 def main():
     print("### Dane treningowe ###")
     print("Wczytywanie danych treningowych.")
-    data_train = load_data('./Test/annotations','./Test/images/')
+    data_train = load_data('./Train/annotations','./Train/images/')
     print('Statystyka zbioru treningowego:')
     display_dataset_stats(data_train)
 
     print("### Dane testowe ###")
     print("Wczytywanie danych testowych.")
-    data_test = load_data('./Train/annotations','./Train/images/')
+    data_test = load_data('./Test/annotations','./Test/images/')
     print('Statystyka zbioru testowego:')
     display_dataset_stats(data_test)
 
