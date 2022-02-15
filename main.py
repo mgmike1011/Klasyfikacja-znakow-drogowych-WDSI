@@ -38,6 +38,7 @@ class Obiekt:
         elif self.Type == 'trafficlight':
             self.label = 1
         self.image = cv2.imread(Path) # Załadowane zdjęcie
+        self.image_crop = self.image[int(self.Y1):int(self.Y2),int(self.X1):int(self.X2)]
         # Dane uzyskane z predykcji:
         self.label_pred = 10
         self.X1_pred = 0
@@ -45,6 +46,8 @@ class Obiekt:
         self.Y1_pred = 0
         self.Y2_pred = 0
         self.desc = 0
+        self.desc_list = []
+        self.koordynaty = []
 
 # Funkcje:
 def load_data(path, path_type):
@@ -108,8 +111,8 @@ def learn_bovw(data):
     sift = cv2.SIFT_create()
     for sample in data:
         for sample_i in sample.lista_obiektow:
-            kpts = sift.detect(sample_i.image, None)
-            kpts, desc = sift.compute(sample_i.image,kpts)
+            kpts = sift.detect(sample_i.image_crop, None)
+            kpts, desc = sift.compute(sample_i.image_crop,kpts)
             if desc is not None:
                 bow.add(desc)
     vocabulary = bow.cluster()
@@ -128,9 +131,54 @@ def extract_features(data):
     bow.setVocabulary(vocabulary)
     for sample in data:
         for sample_i in sample.lista_obiektow:
-            kpts = sift.detect(sample_i.image, None)
-            desc = bow.compute(sample_i.image, kpts)
+            kpts = sift.detect(sample_i.image_crop, None)
+            desc = bow.compute(sample_i.image_crop, kpts)
             sample_i.desc = desc
+    return data
+
+def extract_features_test_data(data):
+    """
+    Wydobywanie cech zbioru i zapis deskryptorów przy wykorzystaniu dzielenia obrazu na kwadraty 10x10.
+    @param data: Lista obiektów klasy Zdjęcie.
+    @return: Lista obiektów klasy Zdjęcie z dodanymi deskryptorami dla każdej próbki.
+    """
+    sift = cv2.SIFT_create()
+    flann = cv2.FlannBasedMatcher_create()
+    bow = cv2.BOWImgDescriptorExtractor(sift, flann)
+    vocabulary = np.load('voc.npy')
+    bow.setVocabulary(vocabulary)
+    for sample in data:
+        for sample_i in sample.lista_obiektow:
+            x_min = 0
+            x_max = 10
+            y_min = 0
+            y_max = 10
+            while x_max <= int(sample_i.Width):
+                while y_max <= int(sample_i.Height):
+                    kpts = sift.detect(sample_i.image[y_min:y_max,x_min:x_max], None)
+                    desc = bow.compute(sample_i.image[y_min:y_max,x_min:x_max], kpts)
+                    sample_i.desc_list.append(desc)
+                    sample_i.koordynaty.append([x_min,x_max,y_min,y_max])
+                    y_max += 5
+                    y_min += 5
+                x_max += 5
+                x_min += 5
+    return data
+
+def predict_test_data(rf, data):
+    """
+    Predykcja etykiet dla zbioru testowego przy zastosowaniu funkcji extract_features_test_data(data).
+    @param data: Lista obiektów klasy Zdjęcie.
+    @param rf: Wtrenowany model
+    @return: Lista obiektów klasy Zdjęcie.
+    """  
+    for sample in data:
+        for sample_i in sample.lista_obiektow:
+            for sample_j in sample_i.desc_list:
+                if sample_j is not None:
+                    pred = rf.predict(sample_j)  
+                    if int(pred) == 0 or 1:
+                        sample_i.label_pred = int(pred)
     return data
 
 def train(data):
@@ -187,12 +235,17 @@ def predict(rf, data):
         for sample_i in sample.lista_obiektow:
             if sample_i.desc is not None:
                 pred = rf.predict(sample_i.desc)  
-                sample_i.label_pred = int(pred)
+                if int(pred) == 0 or 1:
+                    sample_i.label_pred = int(pred)
     return data 
 
 def display(data):
     """
     Wyświetlenie danych.
+    Format wyświetlania:
+    Nazwa zdjęcia, na którym został wykryty znak typu Crosswalk.
+    Ilość wykrytych znaków typu crosswalk.
+    Koordynaty znaku: x_min, x_max, y_min, y_max.
     @param data: Lista obiektów klasy Zdjęcie.
     @return: Nothing
     """
@@ -204,10 +257,10 @@ def display(data):
             if(sample_i.label_pred == 0):
                 nazwa = sample.Nazwa
                 ilosc += 1
-                koordynaty.append([sample_i.X1_pred,sample_i.X2_pred,sample_i.Y1_pred,sample_i.Y2_pred])
+                koordynaty.append([sample_i.X1,sample_i.X2,sample_i.Y1,sample_i.Y2])
         if(ilosc >= 1):
             print(nazwa)
-            print(len(sample.lista_obiektow))
+            print(ilosc)
             for i in koordynaty:
                 print(str(i[0]) + " " + str(i[1]) + " " + str(i[2]) + " " + str(i[3]))
     return
@@ -216,13 +269,13 @@ def display(data):
 def main():
     print("### Dane treningowe ###")
     print("Wczytywanie danych treningowych.")
-    data_train = load_data('./Train/annotations','./Train/images/')
+    data_train = load_data('./Test/annotations','./Test/images/')
     print('Statystyka zbioru treningowego:')
     display_dataset_stats(data_train)
 
     print("### Dane testowe ###")
     print("Wczytywanie danych testowych.")
-    data_test = load_data('./Test/annotations','./Test/images/')
+    data_test = load_data('./Train/annotations','./Train/images/')
     print('Statystyka zbioru testowego:')
     display_dataset_stats(data_test)
 
