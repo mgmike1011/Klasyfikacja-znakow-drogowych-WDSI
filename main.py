@@ -40,13 +40,8 @@ class Obiekt:
         self.image = cv2.imread(Path) # Załadowane zdjęcie
         self.image_crop = self.image[int(self.Y1):int(self.Y2),int(self.X1):int(self.X2)]
         # Dane uzyskane z predykcji:
-        self.label_pred = 10
-        self.X1_pred = 0
-        self.X2_pred = 0
-        self.Y1_pred = 0
-        self.Y2_pred = 0
+        self.label_pred = 1
         self.desc = 0
-        self.desc_list = []
         self.koordynaty = []
 
 # Funkcje:
@@ -62,7 +57,6 @@ def load_data(path, path_type):
         with open(os.path.join(os.getcwd(), filename), 'r') as f:
             obiekty = []
             xmlparse = Xet.parse(f)
-            root = xmlparse.getroot()
             File_name = xmlparse.find("filename").text
             Width = xmlparse.find("size/width").text
             Height = xmlparse.find("size/height").text
@@ -136,51 +130,6 @@ def extract_features(data):
             sample_i.desc = desc
     return data
 
-def extract_features_test_data(data):
-    """
-    Wydobywanie cech zbioru i zapis deskryptorów przy wykorzystaniu dzielenia obrazu na kwadraty 10x10.
-    @param data: Lista obiektów klasy Zdjęcie.
-    @return: Lista obiektów klasy Zdjęcie z dodanymi deskryptorami dla każdej próbki.
-    """
-    sift = cv2.SIFT_create()
-    flann = cv2.FlannBasedMatcher_create()
-    bow = cv2.BOWImgDescriptorExtractor(sift, flann)
-    vocabulary = np.load('voc.npy')
-    bow.setVocabulary(vocabulary)
-    for sample in data:
-        for sample_i in sample.lista_obiektow:
-            x_min = 0
-            x_max = 10
-            y_min = 0
-            y_max = 10
-            while x_max <= int(sample_i.Width):
-                while y_max <= int(sample_i.Height):
-                    kpts = sift.detect(sample_i.image[y_min:y_max,x_min:x_max], None)
-                    desc = bow.compute(sample_i.image[y_min:y_max,x_min:x_max], kpts)
-                    sample_i.desc_list.append(desc)
-                    sample_i.koordynaty.append([x_min,x_max,y_min,y_max])
-                    y_max += 5
-                    y_min += 5
-                x_max += 5
-                x_min += 5
-    return data
-
-def predict_test_data(rf, data):
-    """
-    Predykcja etykiet dla zbioru testowego przy zastosowaniu funkcji extract_features_test_data(data).
-    @param data: Lista obiektów klasy Zdjęcie.
-    @param rf: Wtrenowany model
-    @return: Lista obiektów klasy Zdjęcie.
-    """  
-    for sample in data:
-        for sample_i in sample.lista_obiektow:
-            for sample_j in sample_i.desc_list:
-                if sample_j is not None:
-                    pred = rf.predict(sample_j)  
-                    if int(pred) == 0 or 1:
-                        sample_i.label_pred = int(pred)
-    return data
-
 def train(data):
     """
     Trains Random Forest classifier
@@ -226,7 +175,7 @@ def evaluate(data):
 
 def predict(rf, data):
     """
-    Predykcja etykiet dla zbioru testowego.
+    Klasyfikacja etykiet dla zbioru testowego.
     @param data: Lista obiektów klasy Zdjęcie.
     @param rf: Wtrenowany model
     @return: Lista obiektów klasy Zdjęcie.
@@ -243,9 +192,9 @@ def display(data):
     """
     Wyświetlenie danych.
     Format wyświetlania:
-    Nazwa zdjęcia, na którym został wykryty znak typu Crosswalk.
-    Ilość wykrytych znaków typu crosswalk.
-    Koordynaty znaku: x_min, x_max, y_min, y_max.
+    Nazwa zdjęcia.
+    Ilość wykrytych znaków (wszytskich typów).
+    Koordynaty znaku: x_min, x_max, y_min, y_max - label_pred: etykieta.
     @param data: Lista obiektów klasy Zdjęcie.
     @return: Nothing
     """
@@ -254,15 +203,15 @@ def display(data):
         ilosc = 0
         koordynaty = []
         for sample_i in sample.lista_obiektow:
-            if(sample_i.label_pred == 0):
+            if(sample_i.label_pred == 0 or 1):
                 nazwa = sample.Nazwa
                 ilosc += 1
-                koordynaty.append([sample_i.X1,sample_i.X2,sample_i.Y1,sample_i.Y2])
+                koordynaty.append([sample_i.X1,sample_i.X2,sample_i.Y1,sample_i.Y2,sample_i.label_pred])
         if(ilosc >= 1):
             print(nazwa)
             print(ilosc)
             for i in koordynaty:
-                print(str(i[0]) + " " + str(i[1]) + " " + str(i[2]) + " " + str(i[3]))
+                print(str(i[0]) + " " + str(i[1]) + " " + str(i[2]) + " " + str(i[3]) + " - label_pred: " + str(i[4]))
     return
 
 # Program główny:
@@ -291,7 +240,7 @@ def main():
     print("Wydobywanie cech zbioru testowego.")
     data_test = extract_features(data_test)
 
-    print("Testowanie na zbiorze testowym.")
+    print("Klasyfikacja znków.")
     data_test = predict(rf,data_test)
 
     print("Wyświetlenie wyników.")
